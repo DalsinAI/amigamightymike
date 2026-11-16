@@ -1,0 +1,167 @@
+# Mighty Mike for GFOS (AmigaOS 3.2 with GFOpenUp), 68040/68060 + FPU, on
+# GFOpenUp's SDL 2 (LIBS:GFOpenGPU/SDL2.module).
+#
+#   make -f amiga/Makefile.amigaos -j4 [STOVE=/path/to/os32-gcc16-open6]
+#
+# STOVE is a GFOpenAmigaGCC 16.2.0-open6 stove: its prefix/ has the
+# compiler, the NDK and GFOpenGPU's SDL 2 kit (prefix/m68k-amigaos).
+# The game draws through SDL's 2D renderer (upstream's SDLRender, no GL),
+# with Pomme (extern/Pomme) built as upstream's CMakeLists.txt sets it:
+# no video, input, graphics, QD3D or MP3. __BIG_ENDIAN__ tells Pomme and
+# the game that the data's byte order is the CPU's own.
+#
+# Output: build/amigaos/MightyMike/ (the drawer: MightyMike, Data/, User/,
+# ReadMe, Controls, the licences, with GlowIcons), build/amigaos/MightyMike.info
+# and Install-MightyMike beside them.
+
+STOVE   ?= $(HOME)/AmiCradle/stoves/os32-gcc16-open6
+PREFIX  ?= $(STOVE)/prefix
+KIT     ?= $(PREFIX)/m68k-amigaos
+CC      = $(PREFIX)/bin/m68k-amigaos-gcc
+CXX     = $(PREFIX)/bin/m68k-amigaos-g++
+CPU     ?= -m68040 -m68881
+# -fno-tree-loop-distribute-patterns: GCC 16's loop miscompile (the kit's
+# sdl2-config gives it for GCC 16 too).
+OPT     ?= -O2 -fomit-frame-pointer -fno-tree-loop-distribute-patterns
+
+DEFS    = -D__amigaos__ -D__BIG_ENDIAN__=1 -DNDEBUG \
+          -DPOMME_NO_VIDEO -DPOMME_NO_INPUT -DPOMME_NO_GRAPHICS -DPOMME_NO_QD3D -DPOMME_NO_MP3
+INC     = -Iamiga -Iextern/Pomme/src -Isrc/Headers -I$(KIT)/include/SDL2 -I$(KIT)/include
+WARN    = -Wno-multichar -Wno-unknown-pragmas
+CFLAGS  = -noixemul $(OPT) $(CPU) -std=gnu11 -fexceptions $(WARN) $(DEFS) $(INC)
+CXXFLAGS = -noixemul $(OPT) $(CPU) -std=c++20 -fexceptions $(WARN) $(DEFS) $(INC)
+LDFLAGS = -noixemul $(CPU)
+LIBS    = -L$(KIT)/lib -lSDL2 -lpthread -latomic -lm
+
+BUILD   = build/amigaos
+OBJDIR  = $(BUILD)/obj
+OUT     = $(BUILD)/MightyMike
+PROG    = MightyMike
+
+GAME    = src/Drivers/Animation.c \
+          src/Drivers/Font.c \
+          src/Drivers/GLRender.c \
+          src/Drivers/ObjectManager.c \
+          src/Drivers/Palette.c \
+          src/Drivers/SDLRender.c \
+          src/Drivers/Shape.c \
+          src/Drivers/Sound.c \
+          src/Drivers/TGA.c \
+          src/Enemies/Bargain/Enemy_8Ball.c \
+          src/Enemies/Bargain/Enemy_Battery.c \
+          src/Enemies/Bargain/Enemy_Robot.c \
+          src/Enemies/Bargain/Enemy_Slinky.c \
+          src/Enemies/Bargain/Enemy_Top.c \
+          src/Enemies/Bargain/Enemy_doggy.c \
+          src/Enemies/Bargain/RaceCar.c \
+          src/Enemies/Candy/Enemy_Carmel.c \
+          src/Enemies/Candy/Enemy_ChocBunny.c \
+          src/Enemies/Candy/Enemy_GBread.c \
+          src/Enemies/Candy/Enemy_GummyBear.c \
+          src/Enemies/Candy/Enemy_LemonDrop.c \
+          src/Enemies/Candy/Enemy_Mint.c \
+          src/Enemies/Clown/Enemy_Clown.c \
+          src/Enemies/Clown/Enemy_ClownCar.c \
+          src/Enemies/Clown/Enemy_FlowerClown.c \
+          src/Enemies/Clown/Enemy_HatBunny.c \
+          src/Enemies/Fairy/Enemy_BBWolf.c \
+          src/Enemies/Fairy/Enemy_Dragon.c \
+          src/Enemies/Fairy/Enemy_Giant.c \
+          src/Enemies/Fairy/Enemy_Soldier.c \
+          src/Enemies/Fairy/Enemy_Spider.c \
+          src/Enemies/Fairy/Enemy_Witch.c \
+          src/Enemies/Jurassic/Enemy_BabyDino.c \
+          src/Enemies/Jurassic/Enemy_CaveMan.c \
+          src/Enemies/Jurassic/Enemy_DinoEgg.c \
+          src/Enemies/Jurassic/Enemy_Rex.c \
+          src/Enemies/Jurassic/Enemy_Triceratops.c \
+          src/Enemies/Jurassic/Enemy_Turtle.c \
+          src/Heart/Cinema.c \
+          src/Heart/Collision.c \
+          src/Heart/FilterThreads.cpp \
+          src/Heart/FramebufferFilter.c \
+          src/Heart/IO.c \
+          src/Heart/Infobar.c \
+          src/Heart/InputDefaults.c \
+          src/Heart/Main.c \
+          src/Heart/Misc.c \
+          src/Heart/Picture.c \
+          src/Heart/SettingsScreen.c \
+          src/Heart/Spin.c \
+          src/Heart/Window.c \
+          src/Heart/input.c \
+          src/Main.cpp \
+          src/MeAndMo/Enemy.c \
+          src/MeAndMo/MyGuy.c \
+          src/MeAndMo/MyGuy2.c \
+          src/MeAndMo/Weapon.c \
+          src/MeAndMo/Weapon2.c \
+          src/Misc/Bonus.c \
+          src/Misc/MiscAnims.c \
+          src/Misc/Traps.c \
+          src/Misc/Triggers.c \
+          src/Playfield/Playfield.c
+POMME   = extern/Pomme/src/Pomme.cpp \
+          extern/Pomme/src/PommeDebug.cpp \
+          extern/Pomme/src/Files/Files.cpp \
+          extern/Pomme/src/Files/HostVolume.cpp \
+          extern/Pomme/src/Files/Resources.cpp \
+          extern/Pomme/src/Memory/Memory.cpp \
+          extern/Pomme/src/Text/TextUtilities.cpp \
+          extern/Pomme/src/Time/TimeManager.cpp \
+          extern/Pomme/src/Utilities/bigendianstreams.cpp \
+          extern/Pomme/src/Utilities/IEEEExtended.cpp \
+          extern/Pomme/src/Utilities/memstream.cpp \
+          extern/Pomme/src/Utilities/StringUtils.cpp \
+          extern/Pomme/src/Utilities/structpack.cpp \
+          extern/Pomme/src/SoundFormats/AIFF.cpp \
+          extern/Pomme/src/SoundFormats/IMA4.cpp \
+          extern/Pomme/src/SoundFormats/MACE.cpp \
+          extern/Pomme/src/SoundFormats/Midi.cpp \
+          extern/Pomme/src/SoundFormats/SoundFormats.cpp \
+          extern/Pomme/src/SoundFormats/xlaw.cpp \
+          extern/Pomme/src/SoundMixer/ChannelImpl.cpp \
+          extern/Pomme/src/SoundMixer/cmixer.cpp \
+          extern/Pomme/src/SoundMixer/SoundManager.cpp
+AMIGA   = amiga/amiga_dir.cpp \
+          amiga/amiga_start.cpp \
+          amiga/fs_space.cpp
+SRC     = $(GAME) $(POMME) $(AMIGA)
+OBJS    = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(basename $(SRC))))
+
+all: $(OUT)/$(PROG) package
+
+$(OUT)/$(PROG): $(OBJS)
+	@mkdir -p $(OUT)
+	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+
+package: $(OUT)/$(PROG) AMIGA_PORT.md amiga/Licences.txt amiga/Controls
+	mkdir -p $(OUT)/User
+	rm -rf $(OUT)/Data
+	cp -R Data $(OUT)/Data
+	cp amiga/Controls $(OUT)/Controls
+	cp AMIGA_PORT.md $(OUT)/ReadMe
+	cp LICENSE.md $(OUT)/Licence.txt
+	cp amiga/Licences.txt $(OUT)/Licences.txt
+	cp amiga/icons/MightyMike.info amiga/icons/ReadMe.info $(OUT)/
+	for f in Licence.txt Licences.txt Controls; do \
+	    cp amiga/icons/ReadMe.info $(OUT)/$$f.info; done
+	cp amiga/icons/Data.info $(OUT)/User.info
+	cp amiga/icons/Data.info $(OUT)/Data.info
+	cp amiga/icons/MightyMike-drawer.info $(BUILD)/MightyMike.info
+	cp amiga/Install-MightyMike amiga/Install-MightyMike.info $(BUILD)/
+
+$(OBJDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+objs: $(OBJS)
+
+clean:
+	rm -rf $(BUILD)
+
+.PHONY: all package objs clean

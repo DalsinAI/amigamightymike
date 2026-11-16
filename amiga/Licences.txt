@@ -1,0 +1,20 @@
+Mighty Mike: licences
+=====================
+
+The game: Mighty Mike (Power Pete), (c) 1995 Pangea Software, Inc.,
+updated by Iliyas Jorio, from github.com/jorio/MightyMike at commit
+10c049e12ade1244b4addf0824553b2049f450d0 (version 3.0.2, the last on
+SDL 2), with Pomme (github.com/jorio/Pomme, commit 1acfd097).
+
+- The game, its code and its data (Data/): Creative Commons
+  Attribution-NonCommercial-ShareAlike 4.0 International (Licence.txt).
+  Free to share and change, not for sale; changes under the same
+  licence. The port's changes to the code (src/, extern/Pomme/) are
+  under it too; the source of this build is in DalsinAI/amigamightymike
+  on GitHub.
+- Pomme: MIT, (c) Iliyas Jorio (extern/Pomme/LICENSE.md in the source).
+- The Amiga port's own files (amiga/, AMIGA_PORT.md, package/, tools/,
+  tests/) are MIT, Copyright (c) 2026 AmiCradle Team. The GlowIcons are
+  drawn from upstream's packaging/MightyMike128.png.
+
+Designed, tested and delivered by The AmiCradle Team.

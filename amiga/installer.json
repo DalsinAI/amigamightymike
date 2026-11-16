@@ -1,0 +1,14 @@
+{
+  "name": "MightyMike",
+  "version": "3.0.2-gfos1",
+  "drawer": "MightyMike",
+  "program": "MightyMike",
+  "cpu": "68040",
+  "fpu": true,
+  "space": 30000000,
+  "modules": ["SDL2.module"],
+  "keep": ["User"],
+  "parent": "Work:Games",
+  "badge": "icons/art/mightymike.png",
+  "script": "Install-MightyMike"
+}

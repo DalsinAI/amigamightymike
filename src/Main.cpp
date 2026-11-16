@@ -7,6 +7,10 @@
 #include <iostream>
 #include <thread>
 
+#ifdef __amigaos__
+#include "amiga_dir.hpp"
+#endif
+
 extern "C"
 {
 	#include "renderdrivers.h"
@@ -84,8 +88,8 @@ static void Boot(const char* executablePath)
 {
 	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 
-#if OSXPPC
-	gNumThreads = 1;
+#if OSXPPC || defined(__amigaos__)
+	gNumThreads = 1;		// one CPU: no render threads
 #else
 	gNumThreads = (int) std::thread::hardware_concurrency();
 	if (gNumThreads >= MAX_RENDER_THREADS)
@@ -170,6 +174,13 @@ int main(int argc, char** argv)
 	bool			showFinalErrorMessage	= false;
 
 	const char* executablePath = argc > 0 ? argv[0] : NULL;
+
+#ifdef __amigaos__
+	// Data/ and User/ are found relative to the game's own drawer.
+	amiga_enter_progdir();
+	amiga_make_user_dir();
+	executablePath = NULL;		// FindGameData: "Data" in the current directory
+#endif
 
 	// Start the game
 	try
